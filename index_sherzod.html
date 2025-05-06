@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Performance Dashboard</title>
+    <meta charset="UTF-8" />
+    <style>
+        table, th, td { border: 1px solid black; border-collapse: collapse; padding: 8px; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h1>Student Performance Data</h1>
+
+    <table id="students-table">
+        <thead>
+            <tr>
+                <th>Gender</th>
+                <th>Race/Ethnicity</th>
+                <th>Parental Education</th>
+                <th>Lunch</th>
+                <th>Prep Course</th>
+                <th>Math</th>
+                <th>Reading</th>
+                <th>Writing</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="student-body"></tbody>
+    </table>
+
+    <h2>Add New Student</h2>
+    <form id="add-form">
+        <input type="text" name="gender" placeholder="Gender" required />
+        <input type="text" name="race_ethnicity" placeholder="Race/Ethnicity" required />
+        <input type="text" name="parental_level_of_education" placeholder="Parental Education" required />
+        <input type="text" name="lunch" placeholder="Lunch" required />
+        <input type="text" name="test_preparation_course" placeholder="Prep Course" required />
+        <input type="number" name="math_score" placeholder="Math Score" required />
+        <input type="number" name="reading_score" placeholder="Reading Score" required />
+        <input type="number" name="writing_score" placeholder="Writing Score" required />
+        <button type="submit">Add Student</button>
+    </form>
+
+    <script>
+        const EC2_BACKEND_URL = 'http://13.250.11.89:8000';
+
+        async function fetchStudents() {
+            const res = await fetch(`${EC2_BACKEND_URL}/students`);
+            const data = await res.json();
+            const tbody = document.getElementById('student-body');
+            tbody.innerHTML = '';
+            data.forEach(student => {
+                const row = document.createElement('tr');
+                student.forEach(cell => {
+                    const td = document.createElement('td');
+                    td.textContent = cell;
+                    row.appendChild(td);
+                });
+                const btn = document.createElement('button');
+                btn.textContent = 'Delete';
+                btn.onclick = () => deleteStudent(student);
+                const action = document.createElement('td');
+                action.appendChild(btn);
+                row.appendChild(action);
+                tbody.appendChild(row);
+            });
+        }
+
+        async function addStudent(data) {
+            await fetch(`${EC2_BACKEND_URL}/add`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            fetchStudents();
+        }
+
+        async function deleteStudent(data) {
+            await fetch(`${EC2_BACKEND_URL}/delete`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    "gender": data[0],
+                    "race_ethnicity": data[1],
+                    "parental_level_of_education": data[2],
+                    "lunch": data[3],
+                    "test_preparation_course": data[4],
+                    "math_score": data[5],
+                    "reading_score": data[6],
+                    "writing_score": data[7],
+                })
+            });
+            fetchStudents();
+        }
+
+        document.getElementById('add-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const data = {};
+            Array.from(form.elements).forEach(el => {
+                if (el.name) data[el.name] = el.value;
+            });
+            await addStudent(data);
+            form.reset();
+        };
+
+        fetchStudents();
+    </script>
+</body>
+</html>
