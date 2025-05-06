@@ -3,7 +3,6 @@
 Fist step is to set up the EC2 machine 
 Configure the security setting so that it can traffic on ports: 80, 22, 443, 5432, 8000, and all traffic.
 Launch an EC2 instance (Ubuntu)
-
 Connect to SSH into EC2:
 Run:
 ssh -i "C:\your_key_2_ec2.pem" ubuntu@<EC2_Public_IP>
